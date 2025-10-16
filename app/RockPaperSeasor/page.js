@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import { useRouter } from "next/navigation"; // For navigation
 
-const socket = io("http://localhost:4000");
+const socket = io("https://task01game-backend.onrender.com");
 
 export default function GameClient2() {
   const router = useRouter();
