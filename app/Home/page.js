@@ -25,7 +25,7 @@ export default function Home() {
     try {
       await signInWithPopup(auth, googleProvider);
       toast.success("✅ Google login successful!");
-      router.push("/GameClient2");
+      router.push("/RockPaperSeasor");
     } catch (err) {
       console.error(err);
       toast.error("❌ Google login failed");
@@ -186,8 +186,8 @@ export default function Home() {
         </div>
 
         {/* Toast Container */}
-        <ToastContainer position="top-right" autoClose={2000} />
       </div>
+        <ToastContainer position="top-center" autoClose={2000} />
     </div>
   );
 }
