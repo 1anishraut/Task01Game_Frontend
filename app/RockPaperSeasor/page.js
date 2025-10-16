@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import { useRouter } from "next/navigation"; // For navigation
 
@@ -16,7 +16,6 @@ export default function GameClient2() {
   const [status, setStatus] = useState("");
   const [result, setResult] = useState(null);
   const [score, setScore] = useState(() => {
-    // Load score from localStorage if exists
     if (typeof window !== "undefined") {
       return (
         JSON.parse(localStorage.getItem("score")) || {
@@ -29,6 +28,14 @@ export default function GameClient2() {
     return { wins: 0, losses: 0, draws: 0 };
   });
 
+  // Sound ref for score increase
+  const scoreSoundRef = useRef(null);
+
+  useEffect(() => {
+    // Initialize audio
+    scoreSoundRef.current = new Audio("/score.mp3");
+  }, []);
+
   // Save score to localStorage whenever it changes
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -37,12 +44,12 @@ export default function GameClient2() {
   }, [score]);
 
   // Clear score on refresh / game end
- useEffect(() => {
-   if (typeof window !== "undefined") {
-     localStorage.removeItem("score");
-     setScore({ wins: 0, losses: 0, draws: 0 });
-   }
- }, []);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("score");
+      setScore({ wins: 0, losses: 0, draws: 0 });
+    }
+  }, []);
 
   useEffect(() => {
     socket.on("OpponentFound", (data) => {
@@ -100,7 +107,15 @@ export default function GameClient2() {
       (mine === "scissors" && opponent === "paper")
     ) {
       setResult("You win! 🏆");
-      setScore((prev) => ({ ...prev, wins: prev.wins + 1 }));
+      setScore((prev) => {
+        const newScore = { ...prev, wins: prev.wins + 1 };
+        // 🔊 Play sound when score increases
+        if (scoreSoundRef.current) {
+          scoreSoundRef.current.currentTime = 0;
+          scoreSoundRef.current.play().catch(() => {});
+        }
+        return newScore;
+      });
     } else {
       setResult("You lose 😢");
       setScore((prev) => ({ ...prev, losses: prev.losses + 1 }));
@@ -122,7 +137,7 @@ export default function GameClient2() {
     setOpponentName("");
     setResult(null);
     setStatus("Game ended");
-    setScore({ wins: 0, losses: 0, draws: 0 }); 
+    setScore({ wins: 0, losses: 0, draws: 0 });
     if (typeof window !== "undefined") localStorage.removeItem("score");
     router.push("/Home");
   };
@@ -133,15 +148,15 @@ export default function GameClient2() {
         backgroundImage:
           "url('https://plus.unsplash.com/premium_photo-1677870728119-52aef052d7ef?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Z2FtaW5nJTIwd2FsbHBhcGVyc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=500')",
       }}
-      className="flex flex-col items-center justify-center min-h-screen  text-white bg-center bg-cover relative"
+      className="flex flex-col items-center justify-center min-h-screen text-white bg-center bg-cover relative"
     >
       <p className="mt-2 text-xl font-semibold absolute top-0 z-10 border p-2 rounded-full backdrop-blur-sm bg-white/10">
-        <span className="text-green-500">Wins: {score.wins}</span> |
-        <span className="text-red-500"> Losses: {score.losses}</span> |
-        <span className="text-yellow-500"> Draws: {score.draws}</span>
+        <span className="text-green-500">Wins: {score.wins}</span> |{" "}
+        <span className="text-red-500">Losses: {score.losses}</span> |{" "}
+        <span className="text-yellow-500">Draws: {score.draws}</span>
       </p>
 
-      <div className="flex flex-col items-center justify-center  backdrop-blur-sm bg-white/10 p-10 shadow-2xl shadow-white/6 border border-white/30 rounded-sm">
+      <div className="flex flex-col items-center justify-center backdrop-blur-sm bg-white/10 p-10 shadow-2xl shadow-white/6 border border-white/30 rounded-sm">
         <div className="mb-4">
           <Image
             src="/logo.png"

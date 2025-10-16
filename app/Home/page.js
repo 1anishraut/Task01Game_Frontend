@@ -5,6 +5,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth, googleProvider, facebookProvider } from "../Firebase/auth";
 import { ToastContainer, toast } from "react-toastify";
@@ -88,12 +89,27 @@ export default function Home() {
     }
   };
 
+  // 🔹 Forgot Password
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast.error("❌ Please enter your email first");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast.success("✅ Password reset email sent! Check your inbox.");
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Failed to send reset email: " + err.message);
+    }
+  };
+
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center gap-4 p-6 text-white bg-cover bg-center"
       style={{
         backgroundImage:
-          "url('https://plus.unsplash.com/premium_photo-1677870728119-52aef052d7ef?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Z2FtaW5nJTIwd2FsbHBhcGVyc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=500')",
+          "url('https://plus.unsplash.com/premium_photo-1677870728119-52aef052d7ef?ixlib=rb-4.1.0&auto=format&fit=crop&q=60&w=500')",
       }}
     >
       <div className="flex flex-col items-center gap-4 border border-white/30 max-w-[90%] p-10 rounded-2xl backdrop-blur-md bg-white/10 shadow-lg">
@@ -154,12 +170,21 @@ export default function Home() {
           </button>
         </div>
 
+        {/* Forgot Password */}
+        <button
+          onClick={handleForgotPassword}
+          className="text-yellow-300 text-sm underline mt-2 hover:text-yellow-400"
+        >
+          Forgot Password?
+        </button>
+
         {/* OR Separator */}
         <div className="flex items-center my-4 w-full">
           <hr className="flex-grow border-t border-white/70 shadow-sm" />
           <span className="mx-2 text-white ">OR</span>
           <hr className="flex-grow border-t border-white/70 shadow-sm" />
         </div>
+
         <p>Connect with</p>
 
         {/* Google & Facebook Buttons */}
@@ -171,7 +196,7 @@ export default function Home() {
             <div className="border rounded-full p-2 bg-white">
               <FcGoogle size={24} />
             </div>
-            <span className="pr-1 text-black">Google</span>
+            <span className="pr-1 ">Google</span>
           </button>
 
           <button
@@ -181,13 +206,12 @@ export default function Home() {
             <div className="border rounded-full p-2 bg-blue-600">
               <FaFacebookF size={24} color="white" />
             </div>
-            <span className="pr-1 text-black">Facebook</span>
+            <span className="pr-1 ">Facebook</span>
           </button>
         </div>
-
-        {/* Toast Container */}
       </div>
-        <ToastContainer position="top-center" autoClose={2000} />
+
+      <ToastContainer position="top-center" autoClose={2000} />
     </div>
   );
 }
